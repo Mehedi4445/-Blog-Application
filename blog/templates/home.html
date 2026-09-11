@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block title %}Home - Django Blog{% endblock %}
+
+{% block content %}
+<div class="hero">
+    <h1 class="display-5 fw-bold">Welcome to Django Blog</h1>
+    <p class="lead mb-0">Read, create and manage blog posts with Django.</p>
+</div>
+
+<form method="get" class="row g-2 mb-4">
+    <div class="col-md-7">
+        <input type="text" name="q" value="{{ query }}" class="form-control"
+               placeholder="Search posts by title or content">
+    </div>
+    <div class="col-md-3">
+        <select name="category" class="form-select">
+            <option value="">All Categories</option>
+            {% for category in categories %}
+                <option value="{{ category }}" {% if selected_category == category %}selected{% endif %}>
+                    {{ category }}
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="col-md-2">
+        <button class="btn btn-dark w-100">Search</button>
+    </div>
+</form>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="h3 mb-0">Latest Posts</h2>
+    {% if user.is_authenticated %}
+        <a href="{% url 'create_post' %}" class="btn btn-primary">+ Create Post</a>
+    {% endif %}
+</div>
+
+<div class="row g-4">
+    {% for post in page_obj %}
+    <div class="col-md-6 col-lg-4">
+        <div class="card post-card h-100 shadow-sm">
+            {% if post.image %}
+                <img src="{{ post.image }}" class="card-img-top post-image" alt="{{ post.title }}">
+            {% endif %}
+            <div class="card-body d-flex flex-column">
+                <span class="badge text-bg-secondary align-self-start mb-2">{{ post.category }}</span>
+                <h3 class="h5">{{ post.title }}</h3>
+                <p class="text-muted small mb-2">
+                    By {{ post.author.username }} · {{ post.created_at|date:"M d, Y" }}
+                </p>
+                <p class="card-text">{{ post.excerpt }}</p>
+                <a href="{% url 'post_detail' post.pk %}" class="btn btn-outline-dark mt-auto">Read More</a>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+        <div class="alert alert-info">No blog posts found.</div>
+    </div>
+    {% endfor %}
+</div>
+
+{% if page_obj.paginator.num_pages > 1 %}
+<nav class="mt-5">
+    <ul class="pagination justify-content-center">
+        {% if page_obj.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?q={{ query }}&category={{ selected_category }}&page={{ page_obj.previous_page_number }}">Previous</a>
+            </li>
+        {% endif %}
+
+        <li class="page-item active">
+            <span class="page-link">
+                Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+            </span>
+        </li>
+
+        {% if page_obj.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?q={{ query }}&category={{ selected_category }}&page={{ page_obj.next_page_number }}">Next</a>
+            </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+{% endblock %}
